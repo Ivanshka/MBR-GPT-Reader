@@ -1,4 +1,5 @@
 ﻿#include "pch.h"
+#include "ConsoleMenu.h"
 
 int printTableInfo(DWORD physDiskNumber);
 int readHddSectors(void** buffer, int sectorsCount, int physDiskNumber);
@@ -6,68 +7,39 @@ BOOL IsAppRunningAsAdminMode();
 
 void SetConsoleColors(int textColor, int backgroundColor);
 
-void showMainMenu();
+void printDisk1Info();
+void printDisk2Info();
+
+int getHDDAmount();
+
+ConsoleMenu* getMainMenu() {
+    ConsoleMenu* menu = new ConsoleMenu(L"Exit");
+
+    ConsoleMenuItem item1(L"Get disk 1 information\n", printDisk1Info);
+    ConsoleMenuItem item2(L"Get disk 2 information\n", printDisk2Info);
+
+    menu->addMenuItem(&item1);
+    menu->addMenuItem(&item2);
+
+    return menu;
+}
 
 int main() {
     int errorCheck = _setmode(_fileno(stdout), _O_U16TEXT);
+
+    int hddAmount = getHDDAmount();
+    wprintf(L"Physical disks amount is %d\n", hddAmount);
 
     if (IsAppRunningAsAdminMode() == FALSE) {
         wprintf(L"Restart this application again with administration privelegies!\n");
         return 0;
     }
 
-    showMainMenu();
-}
+    ConsoleMenu* menu = getMainMenu();
+    menu->show();
+    delete menu;
 
-void showMainMenu() {
-    const int selTextColor = 0;
-    const int deselTextColor = 7;
-    const int selBgColor = 1;
-    const int deselBgColor = 0;
-
-    int selected = 0;
-
-    const wchar_t** mainMenu = new const wchar_t* [3];
-    mainMenu[0] = L"Get disk 1 info\n";
-    mainMenu[1] = L"Get disk 2 info\n";
-    mainMenu[2] = L"Exit";
-
-    while (true) {
-        for (byte i = 0; i < 3; i++)
-        {
-            if (i == selected) {
-                SetConsoleColors(selTextColor, selBgColor);
-                wprintf(L"%d) %s", i+1, mainMenu[i]);
-                SetConsoleColors(deselTextColor, deselBgColor);
-            }
-            else
-            {
-                wprintf(L"%d) %s", i + 1, mainMenu[i]);
-            }
-        }
-
-        int ch = _getch();
-        if (ch == 72)
-            --selected;
-        if (ch == 80)
-            ++selected;
-        if (ch == 13) {
-            system("cls");
-            switch (selected) {
-            case 0: printTableInfo(0); getchar(); break;
-            case 1: printTableInfo(1); getchar(); break;
-            case 2: return;
-            }
-        }
-
-        if (selected > 2)
-            selected = 2;
-        else if (selected < 0)
-            selected = 0;
-
-        SetConsoleColors(deselTextColor, deselBgColor);
-        system("cls");
-    }
+    return 0;
 }
 
 int printTableInfo(DWORD physDiskNumber) {
@@ -99,7 +71,7 @@ int printTableInfo(DWORD physDiskNumber) {
 int readHddSectors(void** buffer, int sectorsCount, int physDiskNumber) {
     const int bytesInSector = 512;
     std::wstring deviceString = L"\\\\.\\PhysicalDrive" + std::to_wstring(physDiskNumber);
-    
+
     HANDLE hDisk = CreateFile(deviceString.c_str(), GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
@@ -176,7 +148,41 @@ Cleanup:
     return fIsRunAsAdmin;
 }
 
-void SetConsoleColors(int textColor, int backgroundColor) {
-    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE); //получаем наше окно, в котором нужно изменить цвет
-    SetConsoleTextAttribute(consoleHandle, (((2 << backgroundColor) | textColor)));
+
+void printDisk1Info() {
+    wprintf(L"\n");
+    const int number = 0;
+    printTableInfo(number);
+    _getch();
 }
+
+void printDisk2Info() {
+    wprintf(L"\n");
+    const int number = 1;
+    printTableInfo(number);
+    _getch();
+}
+
+int getHDDAmount()
+{
+    // BAD WAY
+    int diskNumber = 0;
+    bool valid = false;
+    do {
+        std::wstring deviceString = L"\\\\.\\PhysicalDrive" + std::to_wstring(diskNumber);
+
+        HANDLE hDisk = CreateFile(deviceString.c_str(), GENERIC_READ | GENERIC_WRITE,
+            FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+        if (hDisk != INVALID_HANDLE_VALUE) {
+            valid = true;
+            ++diskNumber;
+        }
+        else
+            valid = false;
+
+    } while (valid);
+
+    return diskNumber;
+}
+

@@ -141,6 +141,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ConsoleMenu.cpp" />
+    <ClCompile Include="ConsoleMenuItem.cpp" />
     <ClCompile Include="ptable.cpp" />
     <ClCompile Include="main.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">pch.h</PrecompiledHeaderFile>
@@ -152,6 +154,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConsoleMenu.h" />
+    <ClInclude Include="ConsoleMenuItem.h" />
     <ClInclude Include="ptable.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>

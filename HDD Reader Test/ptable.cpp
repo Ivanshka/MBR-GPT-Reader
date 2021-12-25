@@ -1,15 +1,8 @@
 #include "pch.h"
-#include "ptable.h"
-#include <string>
 
 wchar_t* typeCodeToWstring(byte partTypeCode);
-
 LPWSTR asciiToUnicode(char* asciiString);
 LPWSTR guidToString(byte guid[16]);
-
-
-
-
 
 bool ptable::isGptDisk(ptable::mbr mbr)
 {
@@ -51,8 +44,6 @@ void ptable::print(ptable::mbr mbr, bool fullInfo)
         }
     }
 }
-
-
 
 void ptable::print(ptable::gpt* gpt)
 {
